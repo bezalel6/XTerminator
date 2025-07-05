@@ -35,6 +35,7 @@ import EnvironmentIndicator from './env-indicator';
 import Query from 'lib/query';
 import { getIconPath } from 'lib/themeing';
 import { isProd } from 'lib/environment';
+import DataDisplayDialog from './data-display-dialog';
 
 export type Setting<K extends keyof ExtensionSettings> = {
   value: ExtensionSettings[K];
@@ -58,6 +59,8 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
     source: Source.MAIN,
     overrideDefaultSelectors: false,
   });
+
+  const [selectorsDialogOpen, setSelectorsDialogOpen] = useState(false);
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -248,6 +251,7 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
                   >
                     Reset to default
                   </Button>
+                  <Button onClick={() => setSelectorsDialogOpen(true)}>Show All Selectors</Button>
                   {!isProd && (
                     <ToggleSwitch
                       label="Persist Default Selectors"
@@ -262,6 +266,15 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
             <EnvironmentIndicator />
           </Paper>
         </Container>
+
+        {/* Selectors Dialog */}
+        <DataDisplayDialog
+          open={selectorsDialogOpen}
+          onClose={() => setSelectorsDialogOpen(false)}
+          title="Current Selectors"
+          data={state.selectors}
+          theme={theme}
+        />
       </ThemeProvider>
     </Box>
   );
