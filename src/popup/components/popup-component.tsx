@@ -6,6 +6,10 @@ import {
   Container,
   createTheme,
   CssBaseline,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Divider,
   IconButton,
   Paper,
@@ -13,7 +17,7 @@ import {
   Typography,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import { ExpandMore as ExpandMoreIcon, Close as CloseIcon } from '@mui/icons-material';
 import { ExtensionSettings, Source } from '../../types';
 import Header from '../components/header';
 import UpdateSection from './updates';
@@ -35,7 +39,6 @@ import EnvironmentIndicator from './env-indicator';
 import Query from 'lib/query';
 import { getIconPath } from 'lib/themeing';
 import { isProd } from 'lib/environment';
-import DataDisplayDialog from './data-display-dialog';
 
 export type Setting<K extends keyof ExtensionSettings> = {
   value: ExtensionSettings[K];
@@ -268,13 +271,61 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
         </Container>
 
         {/* Selectors Dialog */}
-        <DataDisplayDialog
+        <Dialog
           open={selectorsDialogOpen}
           onClose={() => setSelectorsDialogOpen(false)}
-          title="Current Selectors"
-          data={state.selectors}
-          theme={theme}
-        />
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <Typography variant="h6">Current Selectors</Typography>
+            <IconButton onClick={() => setSelectorsDialogOpen(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <Box
+              sx={{ fontFamily: 'Monaco, Consolas, "Courier New", monospace', fontSize: '0.85rem' }}
+            >
+              {Object.entries(state.selectors).map(([key, value]) => (
+                <Box key={key} sx={{ mb: 2 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: 'primary.main', fontWeight: 'bold' }}
+                  >
+                    {key}:
+                  </Typography>
+                  <Box
+                    sx={{
+                      pl: 2,
+                      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                      borderRadius: 1,
+                      p: 1,
+                      mt: 0.5,
+                    }}
+                  >
+                    {Array.isArray(value) ? (
+                      value.map((item, index) => (
+                        <Typography key={index} variant="body2" sx={{ fontFamily: 'inherit' }}>
+                          • {item}
+                        </Typography>
+                      ))
+                    ) : (
+                      <Typography variant="body2" sx={{ fontFamily: 'inherit' }}>
+                        {value}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setSelectorsDialogOpen(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
       </ThemeProvider>
     </Box>
   );
