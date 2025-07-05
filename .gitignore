@@ -4,3 +4,4 @@ dist/
 tmp/
 /packages
 /src/filtering
+.cursorignore
