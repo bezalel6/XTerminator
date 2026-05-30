@@ -108,9 +108,10 @@ async function init() {
   );
 }
 init();
-// chrome.runtime.onInstalled.addListener(async (p) => {
+chrome.runtime.onInstalled.addListener(async (p) => {
+  return fetchAndUpdateJson()
 // chrome.action.setBadgeText({ text: "10+" });
-// });
+});
 
 // Function to convert update policy to minutes
 function getUpdatePolicyInMinutes(policy: UpdatePolicy): number | null {
