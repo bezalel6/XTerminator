@@ -15,6 +15,8 @@ export interface ExtensionSettings {
   automaticUpdatePolicy: UpdatePolicy;
   source?: Source;
   overrideDefaultSelectors?: boolean;
+  debugMode?: boolean;
+  debugVisibleSelectors?: (keyof Selectors)[];
 }
 
 export interface ExtensionMessage {

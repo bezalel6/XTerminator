@@ -39,6 +39,7 @@ import EnvironmentIndicator from './env-indicator';
 import Query from 'lib/query';
 import { getIconPath } from 'lib/themeing';
 import { isProd } from 'lib/environment';
+import DebugModeSelector from './debug-mode-selector';
 
 export type Setting<K extends keyof ExtensionSettings> = {
   value: ExtensionSettings[K];
@@ -61,6 +62,8 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
     selectors: SELECTORS,
     source: Source.MAIN,
     overrideDefaultSelectors: false,
+    debugMode: false,
+    debugVisibleSelectors: [],
   });
 
   const [selectorsDialogOpen, setSelectorsDialogOpen] = useState(false);
@@ -331,3 +334,4 @@ const Popup: React.FC<PopupProps> = ({ optionsPage, highlight: highlightProp }) 
   );
 };
 export default Popup;
+

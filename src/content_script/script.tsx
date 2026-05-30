@@ -25,8 +25,20 @@ import { injectPromo as flexible, injectedContainerClassName } from './flexible-
 import { injectPromo } from './extension-promo';
 import Query from '../lib/query';
 import { className } from 'lib/css';
+import { isProd } from '../lib/environment';
+import {
+  injectDebugStyles,
+  removeDebugStyles,
+  highlightSelectors,
+  clearAllHighlights,
+  setupDebugMutationObserver,
+  disconnectDebugMutationObserver,
+} from './debug-visualizer';
 const BTNS = 'BUTTONS_WRAPPER';
 const AD = 'AD';
+
+// Debug mode mutation observer tracker (dev only)
+let debugMutationObserver: MutationObserver | null = null;
 
 function processAd(tweet: HTMLElement, userNameElement: HTMLElement, settings: SettingsManger) {
   const { promotedContentAction } = settings.getState();
@@ -60,8 +72,15 @@ function processAd(tweet: HTMLElement, userNameElement: HTMLElement, settings: S
  */
 export async function processUsername(userNameElement: HTMLElement) {
   const settings = await getSettingsManager('content');
+  const state = settings.getState();
+  
+  // Skip processing if debug mode is enabled (dev only)
+  if (!isProd && state.debugMode) {
+    return;
+  }
+  
   const tweet = getTweet(userNameElement)!;
-  const selector = settings.getState().selectors.userMenuSelector;
+  const selector = state.selectors.userMenuSelector;
   const moreBtn = await waitFor(selector);
   if (!moreBtn || isMessedWith(userNameElement) || isUserOwnAccount(userNameElement)) return;
   setMessedWith(userNameElement);
@@ -74,7 +93,7 @@ export async function processUsername(userNameElement: HTMLElement) {
   buttonContainer.style.alignItems = 'center';
   buttonContainer.style.marginLeft = '4px';
 
-  const { isBlockEnabled, isMuteEnabled } = settings.getState();
+  const { isBlockEnabled, isMuteEnabled } = state;
   const btns = Array<HTMLElement>();
   btns.push(Button('Mute', 'mute', userNameElement));
   btns.push(Button('Block', 'block', userNameElement));
@@ -171,6 +190,28 @@ async function initialize(state: ExtensionSettings) {
         });
     }
   );
+
+  // Debug mode subscription (dev only)
+  if (!isProd) {
+    settings.subscribe(
+      ['debugMode', 'debugVisibleSelectors'],
+      ({ debugMode, debugVisibleSelectors, selectors }) => {
+        if (debugMode && debugVisibleSelectors && debugVisibleSelectors.length > 0) {
+          console.log('[XTerminator] Debug mode enabled, visualizing selectors:', debugVisibleSelectors);
+          injectDebugStyles();
+          highlightSelectors(selectors, debugVisibleSelectors);
+          debugMutationObserver = setupDebugMutationObserver(selectors, debugVisibleSelectors);
+        } else {
+          console.log('[XTerminator] Debug mode disabled, clearing visualization');
+          clearAllHighlights();
+          removeDebugStyles();
+          disconnectDebugMutationObserver(debugMutationObserver);
+          debugMutationObserver = null;
+        }
+      }
+    );
+  }
+
   (window as any).injectPromo = injectPromo;
   observeDOMChanges(state);
 }
